@@ -1,0 +1,57 @@
+[project]
+name = "pyl"
+description = "Python for shell scripting"
+dynamic = ["version"]
+requires-python = ">= 3.12"
+authors = [
+    {name = "Benjy Wiener"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+    "Topic :: Software Development :: Pre-processors",
+]
+keywords = ["shell", "commandline"]
+readme = "README.rst"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+  "macro-polo~=0.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/BenjyWiener/pyl"
+Repository = "https://github.com/BenjyWiener/pyl"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+extend-select = ["D", "I"]
+ignore = [
+    "D105",  # undocumented-magic-method
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+lines-after-imports = 2
+
+[tool.pyright]
+pythonVersion = "3.12"
