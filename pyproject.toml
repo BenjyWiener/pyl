@@ -27,6 +27,9 @@ dependencies = [
 Homepage = "https://github.com/BenjyWiener/pyl"
 Repository = "https://github.com/BenjyWiener/pyl"
 
+[project.scripts]
+pyl = "pyl:main"
+
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
