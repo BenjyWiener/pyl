@@ -7,30 +7,63 @@ import token
 from typing import cast
 
 from macro_polo import Token, lex, stringify
-from macro_polo.macros import LoopingMacro, ScanningMacro
+from macro_polo.macros import LoopingMacro, MultiMacro, ScanningMacro
 from macro_polo.match import MacroMatch
 from macro_polo.parse import parse_macro_matcher, parse_macro_transcriber
 
 
-_braces_matcher = parse_macro_matcher(
-    ': {$( $($[!;] $line:tt)* ;)* $( $($print_line:tt)+ )?}'
-)
-_braces_transcriber = parse_macro_transcriber(
-    ': $> $($($line)* $^)* $(print($($print_line)*))* $<'
-)
+_braces_matcher = parse_macro_matcher(': { $($inner:tt)* }')
+_braces_inner_transcriber = parse_macro_transcriber('$($inner)*')
+_braces_transcriber = parse_macro_transcriber(': $> $($inner)* $<')
 
 
 def braces_macro(tokens: Sequence[Token]) -> tuple[Sequence[Token], int]:
     """Replace braces with indentation.
 
     Replaces ``: {...}`` with an indented block preceded by ``:``.
-    Additionally, replaces semicolons with newlines, and wraps an optional final
-    non-semicolon-terminated line in a print statement.
     """
     if match := _braces_matcher.match(tokens):
-        return tuple(_braces_transcriber.transcribe(match.captures)), match.size
+        inner_tokens = tuple(_braces_inner_transcriber.transcribe(match.captures))
+
+        inner_tokens = line_macro(inner_tokens) or inner_tokens
+        output = tuple(_braces_transcriber.transcribe({'inner': list(inner_tokens)}))
+        return output, match.size
 
     return (), 0
+
+
+_line_matcher = parse_macro_matcher(
+    # Semicolon terminated lines.
+    '$( $($[!;] $line:tt)* ;)*'
+    # Optional non-semicolon-terminated line.
+    # tokens.
+    '$('
+    '  $('
+    #    Only match if the line does not contain any indents.
+    '    $[!$> $($_:tt)* $<]'
+    #    Only match if the line doesn't contain braces that will become indents.
+    '    $[!: {$($_:tt)*}]'
+    '    $print_line:tt'
+    '  )+'
+    #  Only match if the line matches all remaining tokens.
+    '  $[!$_:tt]'
+    ')?'
+)
+_line_transcriber = parse_macro_transcriber(
+    '$($($line)* $^)* $(print($($print_line)*))*'
+)
+
+
+def line_macro(tokens: Sequence[Token]) -> Sequence[Token] | None:
+    """Replace semicolons with newlines and expand implicit print.
+
+    A non-semicolon-terminated line at the end of a block becomes an implicit print
+    statement (unless it contains an indented block itself).
+    """
+    if match := _line_matcher.match(tokens):
+        return (*_line_transcriber.transcribe(match.captures), *tokens[match.size :])
+
+    return None
 
 
 _short_import_matcher = parse_macro_matcher('$mod:name $(.$submod:name)* ::')
@@ -106,13 +139,16 @@ def argv_macro(tokens: Sequence[Token]) -> tuple[Sequence[Token], int]:
     return (), 0
 
 
-pyl_macro = LoopingMacro(
-    ScanningMacro(
-        braces_macro,
-        short_import_macro,
-        env_var_macro,
-        argv_macro,
+pyl_macro = MultiMacro(
+    LoopingMacro(
+        ScanningMacro(
+            braces_macro,
+            short_import_macro,
+            env_var_macro,
+            argv_macro,
+        ),
     ),
+    line_macro,
 )
 
 
