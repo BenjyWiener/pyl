@@ -1,5 +1,5 @@
 [project]
-name = "pyl"
+name = "python-pyl"
 description = "Python for shell scripting"
 dynamic = ["version"]
 requires-python = ">= 3.12"
