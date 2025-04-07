@@ -37,6 +37,9 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/pyl"]
+
 [tool.ruff]
 target-version = "py312"
 
