@@ -44,7 +44,7 @@ The Solution
 ============
 
 ``pyl`` introduces a number of syntax extensions that, together, make it easy to write
-readable shell one-lines that take advantage of everything Python has to offer:
+readable shell one-lines that take full advantage of everything Python has to offer:
 
 Braces
     Curly braces that appear immediately after a colon become indentation.
@@ -120,7 +120,7 @@ Inline-import
         print(__import__('urllib.parse').parse.quote('hello world'))
 
 Environment variables
-    Environment variables can be accessed with :samp:`${NAME}`.
+    Environment variables can be accessed with ``$NAME``.
 
     Example:
 
@@ -135,7 +135,7 @@ Environment variables
         print(__import__('os').environ['HOME'])
 
 Command line arguments
-    Command line arguments can be accessed with :samp:`${INDEX}`.
+    Command line arguments can be accessed with ``$INDEX`` where ``INDEX`` is a number.
 
     Example:
 
